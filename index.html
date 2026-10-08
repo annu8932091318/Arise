@@ -446,76 +446,72 @@
    DATA — the whole 12-week split, embedded as JSON. No external calls
    except the "watch form" YouTube links (opened in a new tab).
    ====================================================================== */
+const REST_BETWEEN_SETS = "Rest 60-90s between sets";
+
+// Shared 10-min warm-up sequence done before weights, every training day.
+const WARMUP = [
+  { name:"Cat-Cow Stretch",    sets:1, reps:"10 reps",             type:"simple", yt:"cat cow stretch proper form" },
+  { name:"Arm Circles",        sets:1, reps:"15s fwd + 15s back",  type:"simple", yt:"arm circles warm up proper form" },
+  { name:"Glute Bridges",      sets:1, reps:"12 reps",             type:"simple", yt:"glute bridge proper form" },
+  { name:"Warm-Up Treadmill Walk", sets:1, reps:"5 min @ Speed 4.0, Incline 5", type:"simple", yt:"treadmill incline walk warm up" }
+];
+// Shared post-workout cardio finisher, every training day.
+const POST_CARDIO = [
+  { name:"Post-Workout Treadmill Walk", sets:1, reps:"10 min @ Speed 4.0, Incline 12", type:"simple", yt:"incline treadmill walk fat loss" }
+];
+
+const CHEST_BACK = [
+  { name:"Incline Dumbbell Bench Press", sets:3, reps:"8-10", repTarget:10, type:"weighted", inc:2.5, rest:REST_BETWEEN_SETS, yt:"incline dumbbell bench press proper form" },
+  { name:"Lat Pulldowns",                sets:3, reps:"10",   repTarget:10, type:"weighted", inc:2.5, rest:REST_BETWEEN_SETS, yt:"lat pulldown proper form" },
+  { name:"Flat Dumbbell Bench Press",    sets:3, reps:"10",   repTarget:10, type:"weighted", inc:2.5, rest:REST_BETWEEN_SETS, yt:"flat dumbbell bench press proper form" },
+  { name:"Seated Cable Rows",            sets:3, reps:"10-12",repTarget:12, type:"weighted", inc:2.5, rest:REST_BETWEEN_SETS, yt:"seated cable row proper form" },
+  { name:"Dumbbell Chest Flyes",         sets:3, reps:"12",   repTarget:12, type:"weighted", inc:1,   rest:REST_BETWEEN_SETS, yt:"dumbbell chest flyes proper form" }
+];
+
+const SHOULDERS_ARMS = [
+  { name:"Dumbbell Overhead Shoulder Press", sets:3, reps:"8-10",  repTarget:10, type:"weighted", inc:1, rest:REST_BETWEEN_SETS, yt:"dumbbell overhead shoulder press proper form" },
+  { name:"Dumbbell Hammer Curls",             sets:3, reps:"10-12", repTarget:12, type:"weighted", inc:1, rest:REST_BETWEEN_SETS, yt:"dumbbell hammer curl proper form" },
+  { name:"Overhead Cable Triceps Extension",  sets:3, reps:"10-12", repTarget:12, type:"weighted", inc:1, rest:REST_BETWEEN_SETS, yt:"overhead cable triceps extension proper form" },
+  { name:"Dumbbell Lateral Raises",           sets:4, reps:"12-15", repTarget:15, type:"weighted", inc:1, rest:REST_BETWEEN_SETS, yt:"dumbbell lateral raise proper form" },
+  { name:"EZ-Bar Preacher Curls",              sets:3, reps:"10",    repTarget:10, type:"weighted", inc:1, rest:REST_BETWEEN_SETS, yt:"ez bar preacher curl proper form" },
+  { name:"Triceps Rope Pushdowns",             sets:3, reps:"12",    repTarget:12, type:"weighted", inc:1, rest:REST_BETWEEN_SETS, yt:"triceps rope pushdown proper form" }
+];
+
+const LEGS_CORE_REARDELTS = [
+  { name:"Goblet Squats",       sets:3, reps:"10",       repTarget:10, type:"weighted", inc:2.5, rest:REST_BETWEEN_SETS, yt:"goblet squat proper form" },
+  { name:"Romanian Deadlifts",  sets:3, reps:"10",       repTarget:10, type:"weighted", inc:2.5, rest:REST_BETWEEN_SETS, yt:"dumbbell romanian deadlift proper form" },
+  { name:"Face Pulls",         sets:3, reps:"15",        repTarget:15, type:"weighted", inc:1,   rest:REST_BETWEEN_SETS, yt:"cable face pulls proper form" },
+  { name:"Lying Leg Curls",    sets:3, reps:"12",        repTarget:12, type:"weighted", inc:2.5, rest:REST_BETWEEN_SETS, yt:"lying leg curl machine proper form" },
+  { name:"Dead Bugs",          sets:3, reps:"12/side",   type:"simple", rest:REST_BETWEEN_SETS, yt:"dead bug exercise proper form" },
+  { name:"RKC Plank",          sets:3, reps:"30-45 sec hold", type:"simple", rest:REST_BETWEEN_SETS, yt:"RKC plank proper form" }
+];
+
 const PLAN = {
   Monday: {
-    focus: "Push", sub: "Chest, Shoulders, Triceps", type: "strength", kcal: "~540 kcal",
-    exercises: [
-      { name:"Flat Barbell/DB Bench Press", sets:4, reps:"8-10", repTarget:10, type:"weighted", inc:5,  yt:"flat barbell bench press proper form" },
-      { name:"Incline Dumbbell Press",        sets:3, reps:"10",   repTarget:10, type:"weighted", inc:2.5, yt:"incline dumbbell press proper form" },
-      { name:"Shoulder Press (DB)",           sets:3, reps:"10",   repTarget:10, type:"weighted", inc:2.5, yt:"dumbbell shoulder press proper form" },
-      { name:"Lateral Raises",                sets:3, reps:"15",   repTarget:15, type:"weighted", inc:1,   yt:"dumbbell lateral raise proper form" },
-      { name:"Triceps Dips / Close-Grip Bench",sets:3, reps:"10",  repTarget:10, type:"weighted", inc:2.5, yt:"triceps dips proper form" },
-      { name:"Overhead Triceps Extension",    sets:3, reps:"12",   repTarget:12, type:"weighted", inc:1,   yt:"overhead triceps extension proper form" },
-      { name:"Hanging Leg Raise / Plank",     sets:3, reps:"to failure", type:"simple", yt:"hanging leg raise proper form" }
-    ]
+    focus: "Chest & Back", sub: "The Torso — arms stay fresh for tomorrow", type: "strength", kcal: "~480 kcal",
+    exercises: WARMUP.concat(CHEST_BACK, POST_CARDIO)
   },
   Tuesday: {
-    focus: "Pull", sub: "Back, Biceps", type: "strength", kcal: "~530 kcal",
-    exercises: [
-      { name:"Pull-ups / Lat Pulldown", sets:4, reps:"8-10", repTarget:10, type:"weighted", inc:2.5, yt:"pull ups proper form" },
-      { name:"Barbell/DB Rows",         sets:3, reps:"10",   repTarget:10, type:"weighted", inc:2.5, yt:"barbell row proper form" },
-      { name:"Seated Cable Row",        sets:3, reps:"10",   repTarget:10, type:"weighted", inc:2.5, yt:"seated cable row proper form" },
-      { name:"Face Pulls",              sets:3, reps:"15",   repTarget:15, type:"weighted", inc:1,   yt:"face pulls proper form" },
-      { name:"Barbell/DB Bicep Curl",   sets:3, reps:"10",   repTarget:10, type:"weighted", inc:1,   yt:"barbell bicep curl proper form" },
-      { name:"Hammer Curl",             sets:3, reps:"12",   repTarget:12, type:"weighted", inc:1,   yt:"hammer curl proper form" },
-      { name:"Cable Crunch / Russian Twists", sets:3, reps:"to failure", type:"simple", yt:"cable crunch proper form" }
-    ]
+    focus: "Shoulders & Arms", sub: "Biceps & Triceps trained at 100% strength", type: "strength", kcal: "~460 kcal",
+    exercises: WARMUP.concat(SHOULDERS_ARMS, POST_CARDIO)
   },
   Wednesday: {
-    focus: "Legs", sub: "Legs + Core", type: "strength", kcal: "~580 kcal",
-    exercises: [
-      { name:"Squats",             sets:4, reps:"8-10", repTarget:10, type:"weighted", inc:5,   yt:"barbell squat proper form" },
-      { name:"Romanian Deadlift",  sets:3, reps:"10",   repTarget:10, type:"weighted", inc:5,   yt:"romanian deadlift proper form" },
-      { name:"Walking Lunges",     sets:3, reps:"12/leg",repTarget:12, type:"weighted", inc:2.5, yt:"walking lunges proper form" },
-      { name:"Leg Curl",           sets:3, reps:"12",   repTarget:12, type:"weighted", inc:2.5, yt:"leg curl machine proper form" },
-      { name:"Calf Raises",        sets:4, reps:"15",   repTarget:15, type:"weighted", inc:2.5, yt:"calf raises proper form" },
-      { name:"Plank Variations",   sets:3, reps:"to failure", type:"simple", yt:"plank proper form" }
-    ]
+    focus: "Legs & Posture", sub: "Legs, Core & Rear Delts", type: "strength", kcal: "~540 kcal",
+    exercises: WARMUP.concat(LEGS_CORE_REARDELTS, POST_CARDIO)
   },
   Thursday: {
-    focus: "HIIT", sub: "Cardio + Abs (active recovery)", type: "hiit", kcal: "~380 kcal",
-    exercises: [
-      { name:"Jump Rope / Sprints / Burpees / Mountain Climbers", sets:10, reps:"30s on / 30s off", type:"simple", yt:"HIIT burpees mountain climbers proper form" },
-      { name:"Crunches",         sets:3, reps:"20", type:"simple", yt:"crunches proper form" },
-      { name:"Bicycle Crunches", sets:3, reps:"20", type:"simple", yt:"bicycle crunches proper form" },
-      { name:"Leg Raises",       sets:3, reps:"15", type:"simple", yt:"lying leg raises proper form" },
-      { name:"Plank",            sets:3, reps:"45 sec", type:"simple", yt:"plank proper form" }
-    ]
+    focus: "Chest & Back", sub: "The Torso — arms stay fresh for Friday", type: "strength", kcal: "~480 kcal",
+    exercises: WARMUP.concat(CHEST_BACK, POST_CARDIO)
   },
   Friday: {
-    focus: "Arms", sub: "Arms Focus + Functional/Athletic", type: "strength", kcal: "~440 kcal",
-    exercises: [
-      { name:"Barbell Curl",          sets:3, reps:"10", repTarget:10, type:"weighted", inc:1,   yt:"barbell curl proper form" },
-      { name:"Incline DB Curl",       sets:3, reps:"12", repTarget:12, type:"weighted", inc:1,   yt:"incline dumbbell curl proper form" },
-      { name:"Close-Grip Bench Press",sets:3, reps:"10", repTarget:10, type:"weighted", inc:2.5, yt:"close grip bench press proper form" },
-      { name:"Skull Crushers",        sets:3, reps:"12", repTarget:12, type:"weighted", inc:1,   yt:"skull crushers proper form" },
-      { name:"Kettlebell Swings",     sets:3, reps:"15", repTarget:15, type:"weighted", inc:2.5, yt:"kettlebell swing proper form" },
-      { name:"Medicine Ball Slams",   sets:3, reps:"12", repTarget:12, type:"weighted", inc:1,   yt:"medicine ball slams proper form" },
-      { name:"Battle Ropes",          sets:3, reps:"30 sec", type:"simple", yt:"battle ropes proper form" }
-    ]
+    focus: "Shoulders & Arms", sub: "Biceps & Triceps trained at 100% strength", type: "strength", kcal: "~460 kcal",
+    exercises: WARMUP.concat(SHOULDERS_ARMS, POST_CARDIO)
   },
   Saturday: {
-    focus: "Full Body", sub: "Full Body Functional + Steady Cardio", type: "strength", kcal: "~530 kcal",
-    exercises: [
-      { name:"Deadlifts",                 sets:3, reps:"8", repTarget:8, type:"weighted", inc:5, yt:"conventional deadlift proper form" },
-      { name:"Push-ups",                  sets:3, reps:"max", type:"simple", yt:"push ups proper form" },
-      { name:"Box Jumps or Jump Squats",  sets:3, reps:"10", type:"simple", yt:"box jumps proper form" },
-      { name:"TRX Rows or Band Rows",     sets:3, reps:"12", type:"simple", yt:"TRX rows proper form" },
-      { name:"Steady-State Cardio (jog/cycle/swim)", sets:1, reps:"30-40 min", type:"simple", yt:"steady state cardio treadmill form" },
-      { name:"Full Body Stretch/Mobility",sets:1, reps:"10 min", type:"simple", yt:"full body stretching routine" }
-    ]
+    focus: "Legs & Posture", sub: "Legs, Core & Rear Delts", type: "strength", kcal: "~540 kcal",
+    exercises: WARMUP.concat(LEGS_CORE_REARDELTS, POST_CARDIO)
   },
-  Sunday: { focus:"Rest", sub:"Rest / Walk / Stretch", type:"rest", kcal:"0-150 kcal (optional walk)", exercises:[] }
+  Sunday: { focus:"Rest", sub:"Full recovery — stretch or walk if you like", type:"rest", kcal:"0-150 kcal (optional walk)", exercises:[] }
 };
 const DAY_ORDER = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
@@ -685,7 +681,7 @@ function suggestedWeight(exName, inc){
 function startSession(day, exerciseList){
   const today = todayISO();
   const sessionExercises = exerciseList.map(e=>({
-    name:e.name, reps:e.reps, repTarget:e.repTarget, type:e.type, inc:e.inc, yt:e.yt,
+    name:e.name, reps:e.reps, repTarget:e.repTarget, type:e.type, inc:e.inc, yt:e.yt, rest:e.rest,
     targetSets:e.sets, makeup: e.makeup||false, missedFromDate: e.missedFromDate||null,
     sets:[], completed:false, skipped:false
   }));
@@ -741,7 +737,7 @@ function renderSession(){
   else { badge.style.display="none"; }
 
   document.getElementById("exName").textContent = ex.name;
-  document.getElementById("exTarget").textContent = `Target: ${ex.targetSets} x ${ex.reps}`;
+  document.getElementById("exTarget").textContent = `Target: ${ex.targetSets} x ${ex.reps}` + (ex.rest ? `  •  ${ex.rest}` : "");
   document.getElementById("exWatchLink").href = "https://www.youtube.com/results?search_query=" + encodeURIComponent(ex.yt || ex.name + " proper form");
 
   const setNum = s.setIndex+1;
