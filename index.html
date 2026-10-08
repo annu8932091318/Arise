@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gym Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121417;
+    --surface:#1b1e23;
+    --surface-2:#242830;
+    --text:#edeff2;
+    --muted:#868d99;
+    --accent:#c9ff3f;
+    --accent-ink:#1a1f0a;
+    --info:#4fa8ff;
+    --warn:#ff9d45;
+    --warn-ink:#2a1700;
+    --border:#2b2f36;
+    --danger:#ff5c5c;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .wrap{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  .num{font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+  header.top{
+    padding:18px 20px 10px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  header.top .day-title{font-size:26px;}
+  header.top .date-sub{color:var(--muted);font-size:13px;}
+  .screen{display:none;flex:1;flex-direction:column;padding:0 20px 110px;}
+  .screen.active{display:flex;}
+
+  /* ---------- Home screen ---------- */
+  .hero-card{
+    background:linear-gradient(145deg,var(--surface-2),var(--surface));
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:22px;
+    margin-top:6px;
+  }
+  .hero-card .focus{font-size:34px;line-height:1.05;margin:2px 0 6px;}
+  .hero-card .meta{color:var(--muted);font-size:14px;}
+  .pill-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .pill{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:12px;
+    padding:5px 10px;
+    border-radius:20px;
+  }
+  .day-switch{
+    display:flex;
+    overflow-x:auto;
+    gap:8px;
+    margin:18px 0 4px;
+    padding-bottom:4px;
+  }
+  .day-switch button{
+    flex:0 0 auto;
+    background:var(--surface);
+    border:1px solid var(--border);
+    color:var(--muted);
+    padding:9px 14px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:600;
+  }
+  .day-switch button.sel{
+    background:var(--accent);
+    color:var(--accent-ink);
+    border-color:var(--accent);
+  }
+  .big-btn{
+    width:100%;
+    border:none;
+    border-radius:16px;
+    padding:18px;
+    font-size:18px;
+    font-weight:700;
+    font-family:'Barlow Condensed',sans-serif;
+    letter-spacing:.3px;
+    background:var(--accent);
+    color:var(--accent-ink);
+    margin-top:18px;
+  }
+  .big-btn.secondary{
+    background:var(--surface-2);
+    color:var(--text);
+    border:1px solid var(--border);
+  }
+  .exercise-preview{
+    margin-top:22px;
+  }
+  .exercise-preview h3{
+    font-size:13px;
+    color:var(--muted);
+    font-weight:600;
+    margin:0 0 10px;
+  }
+  .preview-row{
+    display:flex;
+    justify-content:space-between;
+    padding:11px 0;
+    border-bottom:1px solid var(--border);
+    font-size:15px;
+  }
+  .preview-row span.sr{color:var(--muted);font-size:13px;}
+  .banner{
+    background:linear-gradient(145deg,#2a2210,#1b1e23);
+    border:1px solid var(--warn);
+    border-radius:14px;
+    padding:16px;
+    margin-top:14px;
+  }
+  .banner h4{margin:0 0 6px;color:var(--warn);font-size:15px;}
+  .banner p{margin:0 0 12px;font-size:13.5px;color:var(--text);opacity:.9;}
+  .banner .btn-row{display:flex;gap:8px;}
+  .banner button{
+    flex:1;
+    padding:10px;
+    border-radius:10px;
+    border:none;
+    font-weight:600;
+    font-size:13px;
+  }
+  .banner .accept{background:var(--warn);color:var(--warn-ink);}
+  .banner .dismiss{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .reset-link{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    margin-top:26px;
+    text-decoration:underline;
+  }
+
+  /* ---------- Session screen ---------- */
+  .progress-track{
+    display:flex;
+    gap:5px;
+    padding:14px 20px 0;
+  }
+  .progress-track .seg{
+    flex:1;
+    height:4px;
+    border-radius:3px;
+    background:var(--surface-2);
+  }
+  .progress-track .seg.done{background:var(--accent);}
+  .progress-track .seg.cur{background:var(--info);}
+  .ex-head{margin:18px 0 2px;}
+  .ex-head .badge{
+    display:inline-block;
+    background:var(--info);
+    color:#06202f;
+    font-size:11px;
+    font-weight:700;
+    padding:3px 8px;
+    border-radius:8px;
+    margin-bottom:8px;
+  }
+  .ex-head .badge.makeup{background:var(--warn);color:var(--warn-ink);}
+  .ex-head h2{font-size:28px;margin:0 0 4px;line-height:1.1;}
+  .ex-head .target{color:var(--muted);font-size:14px;}
+  .watch-link{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:12px;
+    color:var(--info);
+    font-size:13.5px;
+    font-weight:600;
+    text-decoration:none;
+    border:1px solid rgba(79,168,255,.35);
+    padding:8px 12px;
+    border-radius:10px;
+  }
+  .set-card{
+    margin-top:22px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px;
+  }
+  .set-label{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  .set-label .set-n{font-size:20px;}
+  .suggest{
+    font-size:12.5px;
+    color:var(--accent);
+    background:rgba(201,255,63,.1);
+    padding:4px 9px;
+    border-radius:8px;
+  }
+  .field-row{display:flex;gap:10px;}
+  .field{flex:1;}
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-size:20px;
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+    padding:12px 10px;
+    border-radius:10px;
+    text-align:center;
+  }
+  .field input:focus{outline:2px solid var(--accent);}
+  .sets-done-list{margin-top:16px;display:flex;flex-direction:column;gap:6px;}
+  .sets-done-list .row{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    color:var(--muted);
+    padding:7px 10px;
+    background:var(--surface-2);
+    border-radius:8px;
+  }
+  .action-bar{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    max-width:480px;
+    margin:0 auto;
+    background:linear-gradient(180deg,rgba(18,20,23,0),var(--bg) 22%);
+    padding:18px 20px calc(18px + env(safe-area-inset-bottom,0px));
+    display:flex;
+    gap:10px;
+  }
+  .action-bar button{
+    border:none;
+    border-radius:14px;
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+    font-size:18px;
+  }
+  .action-bar .done-btn{
+    flex:1;
+    background:var(--accent);
+    color:var(--accent-ink);
+    padding:17px;
+  }
+  .action-bar .back-btn{
+    width:58px;
+    background:var(--surface-2);
+    color:var(--text);
+    border:1px solid var(--border);
+  }
+  .skip-link{
+    text-align:center;
+    margin-top:14px;
+    font-size:12.5px;
+    color:var(--muted);
+    text-decoration:underline;
+  }
+  .end-early{
+    text-align:center;
+    margin-top:8px;
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  /* ---------- Rest / summary ---------- */
+  .rest-art{font-size:46px;margin:40px 0 6px;}
+  .center-msg{text-align:center;margin-top:60px;}
+  .center-msg h2{font-size:26px;margin-bottom:8px;}
+  .center-msg p{color:var(--muted);font-size:14.5px;line-height:1.5;}
+
+  .summary-hero{
+    text-align:center;
+    padding:26px 0 10px;
+  }
+  .summary-hero .big-num{font-size:64px;line-height:1;color:var(--accent);}
+  .summary-hero .cap{color:var(--muted);font-size:13px;margin-top:4px;}
+  .stat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:18px;
+  }
+  .stat-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+  }
+  .stat-card .v{font-size:24px;}
+  .stat-card .l{font-size:12px;color:var(--muted);margin-top:2px;}
+  .summary-list{margin-top:20px;}
+  .summary-list h3{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .summary-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 0;
+    border-bottom:1px solid var(--border);
+    font-size:14.5px;
+  }
+  .summary-row .delta{font-size:12.5px;}
+  .delta.up{color:var(--accent);}
+  .delta.flat{color:var(--muted);}
+  .delta.partial{color:var(--warn);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="day-title num" id="headerDay">—</div>
+      <div class="date-sub" id="headerDate">—</div>
+    </div>
+  </header>
+
+  <!-- ================= HOME SCREEN ================= -->
+  <section class="screen active" id="screen-home">
+
+    <div id="missedBanner"></div>
+
+    <div class="hero-card" id="homeHero">
+      <div class="meta" id="homeMetaTop">Today's session</div>
+      <div class="focus num" id="homeFocus">—</div>
+      <div class="meta" id="homeMetaBottom">—</div>
+      <div class="pill-row" id="homePills"></div>
+    </div>
+
+    <div class="day-switch" id="daySwitch"></div>
+
+    <div id="homeAction"></div>
+
+    <div class="exercise-preview" id="homePreviewWrap">
+      <h3>Today's exercises</h3>
+      <div id="homePreview"></div>
+    </div>
+
+    <div class="reset-link" id="resetLink">Reset all saved data</div>
+  </section>
+
+  <!-- ================= REST SCREEN ================= -->
+  <section class="screen" id="screen-rest">
+    <div class="center-msg">
+      <div class="rest-art">🌙</div>
+      <h2>Rest day</h2>
+      <p>Full recovery today. A light 20-30 min walk or stretching is<br>optional — no structured training.</p>
+    </div>
+  </section>
+
+  <!-- ================= SESSION SCREEN ================= -->
+  <section class="screen" id="screen-session">
+    <div class="progress-track" id="progressTrack" style="margin:0 -20px;"></div>
+
+    <div class="ex-head">
+      <span class="badge" id="exBadge" style="display:none;"></span>
+      <h2 id="exName">—</h2>
+      <div class="target" id="exTarget">—</div>
+      <a class="watch-link" id="exWatchLink" href="#" target="_blank" rel="noopener">▶ Watch proper form</a>
+    </div>
+
+    <div class="set-card">
+      <div class="set-label">
+        <div class="set-n num" id="setLabel">Set 1 of 4</div>
+        <div class="suggest" id="suggestBadge" style="display:none;"></div>
+      </div>
+
+      <div class="field-row" id="weightedFields">
+        <div class="field">
+          <label for="weightInput">Weight (kg)</label>
+          <input type="number" inputmode="decimal" id="weightInput" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="repsInput">Reps done</label>
+          <input type="number" inputmode="numeric" id="repsInput" placeholder="0">
+        </div>
+      </div>
+
+      <div class="field-row" id="simpleFields" style="display:none;">
+        <div class="field">
+          <label for="simpleInput">Reps / seconds (optional)</label>
+          <input type="number" inputmode="numeric" id="simpleInput" placeholder="0">
+        </div>
+      </div>
+
+      <div class="sets-done-list" id="setsDoneList"></div>
+    </div>
+
+    <div class="skip-link" id="skipExerciseBtn">Skip this exercise for now</div>
+    <div class="end-early" id="endEarlyBtn">End workout here</div>
+  </section>
+
+  <!-- ================= SUMMARY SCREEN ================= -->
+  <section class="screen" id="screen-summary">
+    <div class="summary-hero">
+      <div class="big-num num" id="summaryPct">0%</div>
+      <div class="cap">of today's workout completed</div>
+    </div>
+    <div class="stat-grid" id="summaryStats"></div>
+    <div class="summary-list">
+      <h3>Exercise breakdown</h3>
+      <div id="summaryBreakdown"></div>
+    </div>
+    <button class="big-btn" id="summaryHomeBtn" style="margin-bottom:30px;">Back to home</button>
+  </section>
+
+</div>
+
+<div class="action-bar" id="actionBar" style="display:none;">
+  <button class="back-btn" id="backBtn">‹</button>
+  <button class="done-btn" id="doneBtn">Done</button>
+</div>
+
+<script>
+/* ======================================================================
+   DATA — the whole 12-week split, embedded as JSON. No external calls
+   except the "watch form" YouTube links (opened in a new tab).
+   ====================================================================== */
+const PLAN = {
+  Monday: {
+    focus: "Push", sub: "Chest, Shoulders, Triceps", type: "strength", kcal: "~540 kcal",
+    exercises: [
+      { name:"Flat Barbell/DB Bench Press", sets:4, reps:"8-10", repTarget:10, type:"weighted", inc:5,  yt:"flat barbell bench press proper form" },
+      { name:"Incline Dumbbell Press",        sets:3, reps:"10",   repTarget:10, type:"weighted", inc:2.5, yt:"incline dumbbell press proper form" },
+      { name:"Shoulder Press (DB)",           sets:3, reps:"10",   repTarget:10, type:"weighted", inc:2.5, yt:"dumbbell shoulder press proper form" },
+      { name:"Lateral Raises",                sets:3, reps:"15",   repTarget:15, type:"weighted", inc:1,   yt:"dumbbell lateral raise proper form" },
+      { name:"Triceps Dips / Close-Grip Bench",sets:3, reps:"10",  repTarget:10, type:"weighted", inc:2.5, yt:"triceps dips proper form" },
+      { name:"Overhead Triceps Extension",    sets:3, reps:"12",   repTarget:12, type:"weighted", inc:1,   yt:"overhead triceps extension proper form" },
+      { name:"Hanging Leg Raise / Plank",     sets:3, reps:"to failure", type:"simple", yt:"hanging leg raise proper form" }
+    ]
+  },
+  Tuesday: {
+    focus: "Pull", sub: "Back, Biceps", type: "strength", kcal: "~530 kcal",
+    exercises: [
+      { name:"Pull-ups / Lat Pulldown", sets:4, reps:"8-10", repTarget:10, type:"weighted", inc:2.5, yt:"pull ups proper form" },
+      { name:"Barbell/DB Rows",         sets:3, reps:"10",   repTarget:10, type:"weighted", inc:2.5, yt:"barbell row proper form" },
+      { name:"Seated Cable Row",        sets:3, reps:"10",   repTarget:10, type:"weighted", inc:2.5, yt:"seated cable row proper form" },
+      { name:"Face Pulls",              sets:3, reps:"15",   repTarget:15, type:"weighted", inc:1,   yt:"face pulls proper form" },
+      { name:"Barbell/DB Bicep Curl",   sets:3, reps:"10",   repTarget:10, type:"weighted", inc:1,   yt:"barbell bicep curl proper form" },
+      { name:"Hammer Curl",             sets:3, reps:"12",   repTarget:12, type:"weighted", inc:1,   yt:"hammer curl proper form" },
+      { name:"Cable Crunch / Russian Twists", sets:3, reps:"to failure", type:"simple", yt:"cable crunch proper form" }
+    ]
+  },
+  Wednesday: {
+    focus: "Legs", sub: "Legs + Core", type: "strength", kcal: "~580 kcal",
+    exercises: [
+      { name:"Squats",             sets:4, reps:"8-10", repTarget:10, type:"weighted", inc:5,   yt:"barbell squat proper form" },
+      { name:"Romanian Deadlift",  sets:3, reps:"10",   repTarget:10, type:"weighted", inc:5,   yt:"romanian deadlift proper form" },
+      { name:"Walking Lunges",     sets:3, reps:"12/leg",repTarget:12, type:"weighted", inc:2.5, yt:"walking lunges proper form" },
+      { name:"Leg Curl",           sets:3, reps:"12",   repTarget:12, type:"weighted", inc:2.5, yt:"leg curl machine proper form" },
+      { name:"Calf Raises",        sets:4, reps:"15",   repTarget:15, type:"weighted", inc:2.5, yt:"calf raises proper form" },
+      { name:"Plank Variations",   sets:3, reps:"to failure", type:"simple", yt:"plank proper form" }
+    ]
+  },
+  Thursday: {
+    focus: "HIIT", sub: "Cardio + Abs (active recovery)", type: "hiit", kcal: "~380 kcal",
+    exercises: [
+      { name:"Jump Rope / Sprints / Burpees / Mountain Climbers", sets:10, reps:"30s on / 30s off", type:"simple", yt:"HIIT burpees mountain climbers proper form" },
+      { name:"Crunches",         sets:3, reps:"20", type:"simple", yt:"crunches proper form" },
+      { name:"Bicycle Crunches", sets:3, reps:"20", type:"simple", yt:"bicycle crunches proper form" },
+      { name:"Leg Raises",       sets:3, reps:"15", type:"simple", yt:"lying leg raises proper form" },
+      { name:"Plank",            sets:3, reps:"45 sec", type:"simple", yt:"plank proper form" }
+    ]
+  },
+  Friday: {
+    focus: "Arms", sub: "Arms Focus + Functional/Athletic", type: "strength", kcal: "~440 kcal",
+    exercises: [
+      { name:"Barbell Curl",          sets:3, reps:"10", repTarget:10, type:"weighted", inc:1,   yt:"barbell curl proper form" },
+      { name:"Incline DB Curl",       sets:3, reps:"12", repTarget:12, type:"weighted", inc:1,   yt:"incline dumbbell curl proper form" },
+      { name:"Close-Grip Bench Press",sets:3, reps:"10", repTarget:10, type:"weighted", inc:2.5, yt:"close grip bench press proper form" },
+      { name:"Skull Crushers",        sets:3, reps:"12", repTarget:12, type:"weighted", inc:1,   yt:"skull crushers proper form" },
+      { name:"Kettlebell Swings",     sets:3, reps:"15", repTarget:15, type:"weighted", inc:2.5, yt:"kettlebell swing proper form" },
+      { name:"Medicine Ball Slams",   sets:3, reps:"12", repTarget:12, type:"weighted", inc:1,   yt:"medicine ball slams proper form" },
+      { name:"Battle Ropes",          sets:3, reps:"30 sec", type:"simple", yt:"battle ropes proper form" }
+    ]
+  },
+  Saturday: {
+    focus: "Full Body", sub: "Full Body Functional + Steady Cardio", type: "strength", kcal: "~530 kcal",
+    exercises: [
+      { name:"Deadlifts",                 sets:3, reps:"8", repTarget:8, type:"weighted", inc:5, yt:"conventional deadlift proper form" },
+      { name:"Push-ups",                  sets:3, reps:"max", type:"simple", yt:"push ups proper form" },
+      { name:"Box Jumps or Jump Squats",  sets:3, reps:"10", type:"simple", yt:"box jumps proper form" },
+      { name:"TRX Rows or Band Rows",     sets:3, reps:"12", type:"simple", yt:"TRX rows proper form" },
+      { name:"Steady-State Cardio (jog/cycle/swim)", sets:1, reps:"30-40 min", type:"simple", yt:"steady state cardio treadmill form" },
+      { name:"Full Body Stretch/Mobility",sets:1, reps:"10 min", type:"simple", yt:"full body stretching routine" }
+    ]
+  },
+  Sunday: { focus:"Rest", sub:"Rest / Walk / Stretch", type:"rest", kcal:"0-150 kcal (optional walk)", exercises:[] }
+};
+const DAY_ORDER = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+/* ======================================================================
+   STORAGE
+   ====================================================================== */
+const STORE_KEY = "gymTrackerData";
+function loadStore(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return { history: [], lastWeights: {}, lastHitTarget: {} };
+    const parsed = JSON.parse(raw);
+    parsed.history = parsed.history || [];
+    parsed.lastWeights = parsed.lastWeights || {};
+    parsed.lastHitTarget = parsed.lastHitTarget || {};
+    return parsed;
+  }catch(e){
+    return { history: [], lastWeights: {}, lastHitTarget: {} };
+  }
+}
+function saveStore(){ localStorage.setItem(STORE_KEY, JSON.stringify(STORE)); }
+let STORE = loadStore();
+
+function pad2(n){ return (n<10 ? "0" : "") + n; }
+function todayISO(d){
+  const dt = d || new Date();
+  return dt.getFullYear()+"-"+pad2(dt.getMonth()+1)+"-"+pad2(dt.getDate());
+}
+function dayNameFor(d){
+  return DAY_ORDER[(d.getDay()+6)%7]; // getDay(): 0=Sun..6=Sat -> shift so Mon=0
+}
+
+/* ======================================================================
+   APP STATE
+   ====================================================================== */
+let state = {
+  viewDay: dayNameFor(new Date()),     // day currently shown on home screen
+  session: null                         // active session object while training
+};
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.getElementById("actionBar").style.display = (id==="screen-session") ? "flex" : "none";
+}
+
+/* ---------------- HEADER ---------------- */
+function renderHeader(){
+  const now = new Date();
+  document.getElementById("headerDay").textContent = state.viewDay;
+  document.getElementById("headerDate").textContent = now.toLocaleDateString(undefined,{weekday:undefined, month:"short", day:"numeric"});
+}
+
+/* ---------------- MISSED WORKOUT DETECTION ---------------- */
+function findUnresolvedMissed(){
+  const today = todayISO();
+  // most recent incomplete, unresolved session from a previous date
+  for(let i=STORE.history.length-1;i>=0;i--){
+    const h = STORE.history[i];
+    if(h.date!==today && !h.fullyCompleted && !h.resolved){
+      return h;
+    }
+  }
+  return null;
+}
+function renderMissedBanner(){
+  const el = document.getElementById("missedBanner");
+  const missed = findUnresolvedMissed();
+  if(!missed){ el.innerHTML=""; return; }
+  const leftExercises = missed.exercises.filter(e=>!e.completed);
+  const names = leftExercises.map(e=>e.name).join(", ");
+  el.innerHTML = `
+    <div class="banner">
+      <h4>You didn't finish ${missed.day}'s workout</h4>
+      <p>${leftExercises.length} exercise${leftExercises.length===1?"":"s"} left: ${names}. Add ${leftExercises.length===1?"it":"them"} to today's session as a make-up, or dismiss and move on.</p>
+      <div class="btn-row">
+        <button class="accept" id="acceptMakeup">Add to today</button>
+        <button class="dismiss" id="dismissMakeup">Dismiss</button>
+      </div>
+    </div>`;
+  document.getElementById("acceptMakeup").onclick = ()=>{
+    missed.resolved = true;
+    saveStore();
+    startSession(state.viewDay, leftExercises.map(e=>Object.assign({}, e, { sets:e.sets, makeup:true, missedFromDate:missed.date })));
+  };
+  document.getElementById("dismissMakeup").onclick = ()=>{
+    missed.resolved = true;
+    saveStore();
+    renderMissedBanner();
+  };
+}
+
+/* ---------------- HOME SCREEN ---------------- */
+function renderDaySwitch(){
+  const wrap = document.getElementById("daySwitch");
+  wrap.innerHTML = "";
+  DAY_ORDER.forEach(d=>{
+    const b = document.createElement("button");
+    b.textContent = d.slice(0,3);
+    if(d===state.viewDay) b.classList.add("sel");
+    b.onclick = ()=>{ state.viewDay = d; renderHome(); };
+    wrap.appendChild(b);
+  });
+}
+function renderHome(){
+  renderHeader();
+  renderDaySwitch();
+  renderMissedBanner();
+
+  const plan = PLAN[state.viewDay];
+  const isToday = state.viewDay === dayNameFor(new Date());
+  document.getElementById("homeMetaTop").textContent = isToday ? "Today's session" : state.viewDay + "'s session";
+  document.getElementById("homeFocus").textContent = plan.focus;
+  document.getElementById("homeMetaBottom").textContent = plan.sub + "  •  " + plan.kcal;
+
+  const pillWrap = document.getElementById("homePills");
+  pillWrap.innerHTML = "";
+  if(plan.type!=="rest"){
+    const p1 = document.createElement("div"); p1.className="pill"; p1.textContent = plan.exercises.length + " exercises";
+    const p2 = document.createElement("div"); p2.className="pill"; p2.textContent = plan.exercises.reduce((s,e)=>s+e.sets,0) + " sets total";
+    pillWrap.appendChild(p1); pillWrap.appendChild(p2);
+  }
+
+  const actionWrap = document.getElementById("homeAction");
+  const previewWrap = document.getElementById("homePreviewWrap");
+  const previewList = document.getElementById("homePreview");
+
+  if(plan.type==="rest"){
+    actionWrap.innerHTML = `<button class="big-btn secondary" id="goRestBtn">View rest day</button>`;
+    document.getElementById("goRestBtn").onclick = ()=>showScreen("screen-rest");
+    previewWrap.style.display = "none";
+  } else {
+    previewWrap.style.display = "block";
+    const existingToday = STORE.history.find(h=>h.date===todayISO() && h.day===state.viewDay);
+    const label = existingToday && !existingToday.fullyCompleted ? "Continue workout" : "Start workout";
+    actionWrap.innerHTML = `<button class="big-btn" id="startBtn">${label}</button>`;
+    document.getElementById("startBtn").onclick = ()=>{
+      if(existingToday && !existingToday.fullyCompleted){
+        resumeSession(existingToday);
+      } else {
+        startSession(state.viewDay, plan.exercises);
+      }
+    };
+    previewList.innerHTML = plan.exercises.map(e=>`
+      <div class="preview-row"><span>${e.name}</span><span class="sr">${e.sets} x ${e.reps}</span></div>
+    `).join("");
+  }
+}
+
+document.getElementById("resetLink").onclick = ()=>{
+  if(confirm("This clears all saved workout history and weights from this browser. Continue?")){
+    localStorage.removeItem(STORE_KEY);
+    STORE = loadStore();
+    renderHome();
+  }
+};
+document.getElementById("summaryHomeBtn").onclick = ()=>{ showScreen("screen-home"); renderHome(); };
+
+/* ---------------- SESSION LOGIC ---------------- */
+function suggestedWeight(exName, inc){
+  const last = STORE.lastWeights[exName];
+  if(last===undefined) return "";
+  const hit = STORE.lastHitTarget[exName];
+  return hit ? +(last+inc).toFixed(2) : last;
+}
+
+function startSession(day, exerciseList){
+  const today = todayISO();
+  const sessionExercises = exerciseList.map(e=>({
+    name:e.name, reps:e.reps, repTarget:e.repTarget, type:e.type, inc:e.inc, yt:e.yt,
+    targetSets:e.sets, makeup: e.makeup||false, missedFromDate: e.missedFromDate||null,
+    sets:[], completed:false, skipped:false
+  }));
+  const historyEntry = {
+    date: today, day: day,
+    startedAt: new Date().toISOString(),
+    endedAt: null,
+    exercises: sessionExercises,
+    fullyCompleted: false,
+    resolved: false
+  };
+  STORE.history.push(historyEntry);
+  saveStore();
+  state.session = { entry: historyEntry, exIndex: 0, setIndex: 0 };
+  showScreen("screen-session");
+  renderSession();
+}
+function resumeSession(entry){
+  let exIndex = entry.exercises.findIndex(e=>!e.completed && !e.skipped);
+  if(exIndex===-1) exIndex = entry.exercises.length-1;
+  const ex = entry.exercises[exIndex];
+  const setIndex = ex ? ex.sets.length : 0;
+  state.session = { entry, exIndex, setIndex };
+  showScreen("screen-session");
+  renderSession();
+}
+
+function currentExercise(){
+  const s = state.session;
+  return s.entry.exercises[s.exIndex];
+}
+
+function renderProgressTrack(){
+  const track = document.getElementById("progressTrack");
+  const exs = state.session.entry.exercises;
+  track.innerHTML = exs.map((e,i)=>{
+    let cls = "seg";
+    if(e.completed || e.skipped) cls += " done";
+    else if(i===state.session.exIndex) cls += " cur";
+    return `<div class="${cls}"></div>`;
+  }).join("");
+}
+
+function renderSession(){
+  const s = state.session;
+  const ex = currentExercise();
+  if(!ex){ finishSession(); return; }
+
+  renderProgressTrack();
+
+  const badge = document.getElementById("exBadge");
+  if(ex.makeup){ badge.style.display="inline-block"; badge.textContent="Make-up from "+ex.missedFromDate; badge.classList.add("makeup"); }
+  else { badge.style.display="none"; }
+
+  document.getElementById("exName").textContent = ex.name;
+  document.getElementById("exTarget").textContent = `Target: ${ex.targetSets} x ${ex.reps}`;
+  document.getElementById("exWatchLink").href = "https://www.youtube.com/results?search_query=" + encodeURIComponent(ex.yt || ex.name + " proper form");
+
+  const setNum = s.setIndex+1;
+  document.getElementById("setLabel").textContent = `Set ${setNum} of ${ex.targetSets}`;
+
+  const weightedFields = document.getElementById("weightedFields");
+  const simpleFields = document.getElementById("simpleFields");
+  const suggestBadge = document.getElementById("suggestBadge");
+
+  if(ex.type==="weighted"){
+    weightedFields.style.display="flex";
+    simpleFields.style.display="none";
+    const sugg = s.setIndex===0 ? suggestedWeight(ex.name, ex.inc) : (ex.sets[s.setIndex-1] ? ex.sets[s.setIndex-1].weight : "");
+    document.getElementById("weightInput").value = sugg;
+    document.getElementById("repsInput").value = ex.repTarget || "";
+    if(s.setIndex===0 && STORE.lastWeights[ex.name]!==undefined){
+      suggestBadge.style.display="inline-block";
+      suggestBadge.textContent = STORE.lastHitTarget[ex.name] ? `+${ex.inc}kg suggested` : "repeat last weight";
+    } else { suggestBadge.style.display="none"; }
+  } else {
+    weightedFields.style.display="none";
+    simpleFields.style.display="flex";
+    document.getElementById("simpleInput").value = "";
+    suggestBadge.style.display="none";
+  }
+
+  const doneList = document.getElementById("setsDoneList");
+  doneList.innerHTML = ex.sets.map(st=>{
+    if(ex.type==="weighted") return `<div class="row"><span>Set ${st.setNumber}</span><span>${st.weight}kg x ${st.reps}</span></div>`;
+    return `<div class="row"><span>Set ${st.setNumber}</span><span>done</span></div>`;
+  }).join("");
+
+  document.getElementById("backBtn").disabled = (s.exIndex===0 && s.setIndex===0);
+}
+
+document.getElementById("doneBtn").onclick = ()=>{
+  const s = state.session;
+  const ex = currentExercise();
+  if(!ex) return;
+  const setNumber = s.setIndex+1;
+  if(ex.type==="weighted"){
+    const weight = parseFloat(document.getElementById("weightInput").value)||0;
+    const reps = parseInt(document.getElementById("repsInput").value)||0;
+    ex.sets.push({ setNumber, weight, reps, done:true, time:new Date().toISOString() });
+  } else {
+    const val = document.getElementById("simpleInput").value;
+    ex.sets.push({ setNumber, value: val, done:true, time:new Date().toISOString() });
+  }
+  s.setIndex++;
+  if(s.setIndex>=ex.targetSets){
+    ex.completed = true;
+    // update last weight / hit-target memory
+    if(ex.type==="weighted" && ex.sets.length){
+      const lastSet = ex.sets[ex.sets.length-1];
+      STORE.lastWeights[ex.name] = lastSet.weight;
+      const target = ex.repTarget || 0;
+      const allHit = ex.sets.every(st=>st.reps >= target);
+      STORE.lastHitTarget[ex.name] = allHit;
+    }
+    s.exIndex++;
+    s.setIndex = 0;
+  }
+  saveStore();
+  renderSession();
+};
+
+document.getElementById("backBtn").onclick = ()=>{
+  const s = state.session;
+  if(s.setIndex>0){
+    s.setIndex--;
+    const ex = currentExercise();
+    ex.sets.pop();
+  } else if(s.exIndex>0){
+    s.exIndex--;
+    const ex = currentExercise();
+    ex.completed = false;
+    s.setIndex = ex.sets.length;
+    if(s.setIndex>0){ s.setIndex--; ex.sets.pop(); }
+  }
+  saveStore();
+  renderSession();
+};
+
+document.getElementById("skipExerciseBtn").onclick = ()=>{
+  const s = state.session;
+  const ex = currentExercise();
+  if(!ex) return;
+  ex.skipped = true;
+  s.exIndex++;
+  s.setIndex = 0;
+  saveStore();
+  renderSession();
+};
+
+document.getElementById("endEarlyBtn").onclick = ()=>{
+  if(confirm("End the workout now? Anything not done will show as left for next time.")){
+    finishSession();
+  }
+};
+
+function finishSession(){
+  const s = state.session;
+  const entry = s.entry;
+  entry.endedAt = new Date().toISOString();
+  entry.fullyCompleted = entry.exercises.every(e=>e.completed || e.skipped);
+  saveStore();
+  renderSummary(entry);
+  showScreen("screen-summary");
+}
+
+/* ---------------- SUMMARY SCREEN ---------------- */
+function fmtDuration(startISO,endISO){
+  const start = new Date(startISO), end = new Date(endISO);
+  const mins = Math.max(1, Math.round((end-start)/60000));
+  const h = Math.floor(mins/60), m = mins%60;
+  return h>0 ? `${h}h ${m}m` : `${m}m`;
+}
+function renderSummary(entry){
+  const totalEx = entry.exercises.length;
+  const completedEx = entry.exercises.filter(e=>e.completed).length;
+  const totalSets = entry.exercises.reduce((s,e)=>s+e.targetSets,0);
+  const doneSets = entry.exercises.reduce((s,e)=>s+e.sets.length,0);
+  const pct = totalSets>0 ? Math.round((doneSets/totalSets)*100) : 100;
+
+  document.getElementById("summaryPct").textContent = pct + "%";
+
+  document.getElementById("summaryStats").innerHTML = `
+    <div class="stat-card"><div class="v num">${completedEx}/${totalEx}</div><div class="l">Exercises completed</div></div>
+    <div class="stat-card"><div class="v num">${doneSets}/${totalSets}</div><div class="l">Sets completed</div></div>
+    <div class="stat-card"><div class="v num">${entry.endedAt ? fmtDuration(entry.startedAt, entry.endedAt) : "-"}</div><div class="l">Session duration</div></div>
+    <div class="stat-card"><div class="v num">${PLAN[entry.day] ? PLAN[entry.day].kcal.replace(/[^0-9~]/g,"") : ""}</div><div class="l">Est. kcal burned</div></div>
+  `;
+
+  document.getElementById("summaryBreakdown").innerHTML = entry.exercises.map(e=>{
+    let deltaHtml = "";
+    if(e.type==="weighted" && e.sets.length){
+      const lastSet = e.sets[e.sets.length-1];
+      const prevHistory = STORE.history.filter(h=>h.date!==entry.date).reverse()
+        .flatMap(h=>h.exercises).find(x=>x.name===e.name && x.sets.length);
+      if(prevHistory){
+        const prevW = prevHistory.sets[prevHistory.sets.length-1].weight;
+        if(lastSet.weight>prevW) deltaHtml = `<span class="delta up">+${(lastSet.weight-prevW).toFixed(1)}kg vs last time</span>`;
+        else if(lastSet.weight===prevW) deltaHtml = `<span class="delta flat">same as last time</span>`;
+        else deltaHtml = `<span class="delta partial">${lastSet.weight}kg (lower than last time)</span>`;
+      } else {
+        deltaHtml = `<span class="delta flat">first time logged</span>`;
+      }
+    } else if(e.skipped){
+      deltaHtml = `<span class="delta partial">skipped</span>`;
+    } else if(!e.completed){
+      deltaHtml = `<span class="delta partial">incomplete</span>`;
+    }
+    return `<div class="summary-row"><span>${e.name}</span>${deltaHtml}</div>`;
+  }).join("");
+}
+
+/* ---------------- INIT ---------------- */
+renderHome();
+</script>
+</body>
+</html>
